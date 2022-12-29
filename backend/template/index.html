@@ -12,8 +12,6 @@
       rel="stylesheet"
       href="https://cdn.staticfile.org/twitter-bootstrap/4.3.1/css/bootstrap.min.css"
     />
-    <!-- Axios -->
-    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
     <!-- Katex -->
     <link
       rel="stylesheet"
@@ -51,14 +49,16 @@
         <h1>XDU-Planet</h1>
       </header>
       <main>
-        <article v-for="article in articles">
-          <a :href="article.url">
-            <img v-if="article.cover != null" :src="article.cover" />
-            <h2>{{article.title}}</h2>
-            <hr />
-            <p>{{article.excerpt}}</p>
+        {{range $i,$v := .list}}
+        <article>
+          <a href="{{$v.Url}}" target="_blank">
+            <!--<img v-if="article.cover != null" :src="article.cover" />-->
+            <h2>{{$v.Title}}</h2>
+            <p>{{$v.Content}}</p>
           </a>
         </article>
+        <hr />
+        {{end}}
       </main>
       <footer
         class="d-flex flex-column align-items-center justify-content-center bg-light"
@@ -68,30 +68,4 @@
       </footer>
     </div>
   </body>
-  <script>
-    const { createApp } = Vue;
-    createApp({
-      data() {
-        return {
-          src: [],
-          articles: [],
-        };
-      },
-      created: function () {
-        var that = this;
-        axios.get("/_config.yml");
-      },
-      methods: {
-        getSrc: function () {
-          var that = this;
-
-          that.src.forEach((element) => {
-            // fetch xml file
-            // unpack xml file to articles
-            // append article to that.articles
-          });
-        },
-      },
-    }).mount("#app");
-  </script>
 </html>
