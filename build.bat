@@ -2,9 +2,9 @@ cd backend
 @REM Linux
 SET CGO_ENABLED=0
 SET GOARCH=amd64
-@REM SET GOOS=linux
-@REM go build
+SET GOOS=linux
+go build -o ../build/xdu-planet
 @REM Windows
 SET GOOS=windows
-go build -o ../xdu-planet.exe
+go build -o ../build/xdu-planet.exe
 cd ..

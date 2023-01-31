@@ -7,6 +7,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/PuerkitoBio/goquery"
 	"github.com/gin-gonic/gin"
 	"github.com/m3ng9i/feedreader"
 	"gopkg.in/yaml.v3"
@@ -19,6 +20,7 @@ type FeedConfig struct {
 
 type Article struct {
 	Title   string
+	Time    time.Time
 	Content string
 	Url     string
 }
@@ -65,7 +67,7 @@ func FetchFeed() {
 			log.Fatal(err)
 		} else {
 			for _, item := range res.Items {
-				feed.Data = append(feed.Data, Article{Title: item.Title, Content: item.Content, Url: item.Link})
+				feed.Data = append(feed.Data, Article{Title: item.Title, Time: item.PubDate, Content: getContent(item.Content), Url: item.Link})
 			}
 		}
 	}
@@ -104,4 +106,14 @@ func saveDB() {
 	if err := os.WriteFile("db.json", data, 0644); err != nil {
 		log.Panic("Failed to write db")
 	}
+}
+
+func getContent(content string) string {
+	doc, err := goquery.NewDocument(content)
+	if err != nil {
+		log.Print("Compile article content error.")
+		return content
+	}
+	res := doc.Find("p")
+	return res.Text()
 }

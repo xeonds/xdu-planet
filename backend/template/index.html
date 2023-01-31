@@ -5,6 +5,8 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>XDU-Planet</title>
+    <!-- jQuery -->
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
     <!-- Vue -->
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <!-- BootStrap -->
@@ -12,6 +14,8 @@
       rel="stylesheet"
       href="https://cdn.staticfile.org/twitter-bootstrap/4.3.1/css/bootstrap.min.css"
     />
+    <script src="https://cdn.staticfile.org/twitter-bootstrap/4.3.1/js/bootstrap.min.js"></script>
+    <script src="https://cdn.staticfile.org/popper.js/1.15.0/umd/popper.min.js"></script>
     <!-- Katex -->
     <link
       rel="stylesheet"
@@ -40,30 +44,79 @@
       });
     </script>
   </head>
+  <style>
+    article {
+      padding: 0.8rem;
+      margin: 0.5rem;
+      word-break: break-all;
+      box-shadow: 1px 1px 5px 0 rgba(0, 0, 0, 0.02),
+        1px 1px 15px 0 rgba(0, 0, 0, 0.03);
+      width: calc(100% - 1.5rem);
+      max-width: 800px;
+    }
+    .container-fluid {
+      padding: 0;
+    }
+    .article-list {
+      display: flex;
+      flex-flow: column;
+      align-items: center;
+    }
+    .article-title {
+      color: gray;
+    }
+    .article-content {
+      color: gray;
+    }
+    .article-time {
+      color: gray;
+    }
+  </style>
   <body>
-    <div class="container" id="app">
+    <div class="container-fluid" id="app">
+      <nav class="navbar navbar-expand-sm bg-light navbar-light">
+        <a class="navbar-brand" href="/">XDU-Planet</a>
+        <button
+          class="navbar-toggler"
+          type="button"
+          data-toggle="collapse"
+          data-target="#collapsibleNavbar"
+        >
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="collapsibleNavbar">
+          <ul class="navbar-nav">
+            <li class="nav-item">
+              <a class="nav-link" href="/member">成员</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="/analyze">统计</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="/about">关于</a>
+            </li>
+          </ul>
+        </div>
+      </nav>
       <header
-        class="bg-light d-flex flex-column align-items-center justify-content-center bg-light w-100"
+        class="d-flex flex-column align-items-center justify-content-center bg-white w-100"
         style="padding: 2rem"
       >
         <h1>XDU-Planet</h1>
       </header>
-      <main>
+
+      <main class="article-list">
         {{range $i,$v := .list}}
-        <article>
-          <a href="{{$v.Url}}" target="_blank">
-            <!--<img v-if="article.cover != null" :src="article.cover" />-->
-            <h2>{{$v.Title}}</h2>
-            <p>{{$v.Content}}</p>
-          </a>
+        <article class="text-left">
+          <a href="{{$v.Url}}" target="_blank" class="article-title">
+            <h3>{{$v.Title}}</h3> </a
+          ><br />
+          <p class="article-content">{{$v.Content}}</p>
+          <p class="article-time">{{$v.Time}}</p>
         </article>
-        <hr />
         {{end}}
       </main>
-      <footer
-        class="d-flex flex-column align-items-center justify-content-center bg-light"
-        style="padding: 2rem"
-      >
+      <footer class="text-center bg-light" style="padding: 2rem">
         <p>&copy; 2022 <span class="text-primary">|</span> xeonds</p>
       </footer>
     </div>

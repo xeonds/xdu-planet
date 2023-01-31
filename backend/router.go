@@ -20,4 +20,7 @@ func initRouter(r *gin.Engine) {
 
 	// Home page
 	r.GET("/", controller.GenPage)
+	r.GET("/member", controller.GenPage)
+	r.GET("/analyze", controller.GenPage)
+	r.GET("/about", controller.GenPage)
 }
