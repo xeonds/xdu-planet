@@ -1,0 +1,77 @@
+{{ define "header" }}
+<nav class="navbar navbar-expand-sm bg-light navbar-light fixed-top">
+  <a class="navbar-brand" href="/">XDU-Planet</a>
+  <button
+    class="navbar-toggler"
+    type="button"
+    data-toggle="collapse"
+    data-target="#collapsibleNavbar"
+  >
+    <span class="navbar-toggler-icon"></span>
+  </button>
+  <div class="collapse navbar-collapse" id="collapsibleNavbar">
+    <ul class="navbar-nav">
+      <li class="nav-item">
+        <a class="nav-link" href="/">主页</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="/author">成员</a>
+      </li>
+      <!-- <li class="nav-item">
+        <a class="nav-link" href="/analyze">统计</a>
+      </li> -->
+      <li class="nav-item">
+        <a class="nav-link" href="/about">关于</a>
+      </li>
+    </ul>
+  </div>
+</nav>
+<header
+  class="d-flex flex-column align-items-center justify-content-center bg-white w-100"
+>
+  <h1>XDU-Planet</h1>
+</header>
+{{end}} {{define "ref"}}
+<!-- jQuery -->
+<script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+<!-- Vue -->
+<script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+<!-- BootStrap -->
+<link
+  rel="stylesheet"
+  href="https://cdn.staticfile.org/twitter-bootstrap/4.3.1/css/bootstrap.min.css"
+/>
+<script src="https://cdn.staticfile.org/twitter-bootstrap/4.3.1/js/bootstrap.min.js"></script>
+<script src="https://cdn.staticfile.org/popper.js/1.15.0/umd/popper.min.js"></script>
+<!-- Katex -->
+<link
+  rel="stylesheet"
+  href="https://cdn.jsdelivr.net/npm/katex@0.16.3/dist/katex.min.css"
+  integrity="sha384-Juol1FqnotbkyZUT5Z7gUPjQ9gzlwCENvUZTpQBAPxtusdwFLRy382PSDx5UUJ4/"
+  crossorigin="anonymous"
+/>
+<script
+  defer
+  src="https://cdn.jsdelivr.net/npm/katex@0.16.3/dist/katex.min.js"
+  integrity="sha384-97gW6UIJxnlKemYavrqDHSX3SiygeOwIZhwyOKRfSaf0JWKRVj9hLASHgFTzT+0O"
+  crossorigin="anonymous"
+></script>
+<script
+  defer
+  src="https://cdn.jsdelivr.net/npm/katex@0.16.3/dist/contrib/auto-render.min.js"
+  integrity="sha384-+VBxd3r6XgURycqtZ117nYw44OOcIax56Z4dCRWbxyPt0Koah1uHoK0o4+/RRE05"
+  crossorigin="anonymous"
+></script>
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    renderMathInElement(document.body, {
+      delimiters: [{ left: "$", right: "$", display: false }],
+      throwOnError: false,
+    });
+  });
+</script>
+{{end}} {{define "footer"}}
+<footer class="text-center bg-light w-100">
+  <p>&copy; 2022 <span class="text-primary">|</span> xeonds</p>
+</footer>
+{{end}}

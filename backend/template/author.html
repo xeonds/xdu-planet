@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>XDU-Planet</title>
+    <title>Author | XDU-Planet</title>
     {{template "ref"}}
   </head>
   <style>
@@ -19,7 +19,7 @@
       word-break: break-all;
       box-shadow: 1px 1px 5px 0 rgba(0, 0, 0, 0.02),
         1px 1px 15px 0 rgba(0, 0, 0, 0.03);
-      width: calc(100% - 1.5rem);
+      width: 24rem;
       max-width: 800px;
     }
     footer {
@@ -49,17 +49,19 @@
     <div class="container-fluid" id="app">
       {{template "header"}}
       <main class="article-list">
-        {{range $i,$v := .list}}
+        {{range $i,$v := .author}}
         <article class="text-left">
-          <a href="{{$v.Url}}" target="_blank" class="article-title">
-            <h3>{{$v.Title}}</h3> </a
-          ><br />
-          <p class="article-content">{{$v.Content}}</p>
-          <p class="article-time">{{$v.Time}}</p>
+          <a href="{{$v.Uri}}" target="_blank" class="article-title">
+          <p>{{$v.Name}}
+          {{$v.Email}}</p>
+          <hr>
+          <p>{{$v.Description}}</p>
         </article>
         {{end}}
       </main>
-      {{template "footer"}}
+      <footer class="text-center bg-light">
+        <p>&copy; 2022 <span class="text-primary">|</span> xeonds</p>
+      </footer>
     </div>
   </body>
 </html>

@@ -107,6 +107,7 @@ func FetchFeed() {
 	})
 	feed.Update = time.Now()
 	saveDB()
+	log.Println("Fetch RSS done.")
 }
 
 func AddFeed(url string) {
