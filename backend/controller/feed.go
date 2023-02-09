@@ -5,19 +5,17 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"regexp"
+	"sort"
 	"time"
 
-	"github.com/PuerkitoBio/goquery"
 	"github.com/gin-gonic/gin"
 	"github.com/m3ng9i/feedreader"
 	"gopkg.in/yaml.v3"
+	"xyz.xeonds/xdu-planet/util"
 )
 
-type FeedConfig struct {
-	Version int      `yaml:"version"`
-	Feeds   []string `yaml:"feeds"`
-}
-
+// Data model for feed
 type Article struct {
 	Title   string
 	Time    time.Time
@@ -25,63 +23,90 @@ type Article struct {
 	Url     string
 }
 
+type Author struct {
+	Name        string
+	Email       string
+	Uri         string
+	Description string
+}
+
 type Feed struct {
 	Version int       `json:"version"`
-	Data    []Article `json:"data"`
+	Article []Article `json:"article"`
+	Author  []Author  `json:"author"`
 	Update  time.Time `json:"update"`
 }
 
-var config *FeedConfig
+var config *util.Config
 var feed *Feed
 
 func init() {
+	// Load/Initialize the config
 	file, err := os.ReadFile("config.yaml")
 	if err != nil {
 		log.Println("No config file found, creating...")
-		config = &FeedConfig{Version: 1, Feeds: []string{""}}
+		config = &util.Config{Version: 1, Feeds: []string{""}}
 		saveConfig()
 	}
 	if err2 := yaml.Unmarshal(file, &config); err != nil {
 		log.Fatal(err2)
 	}
+	// Load articles from db
 	db, err := os.ReadFile("db.json")
 	if err != nil {
 		log.Println("No db found, creating...")
-		feed = &Feed{Version: 1, Data: nil, Update: time.Now()}
+		feed = &Feed{1, nil, nil, time.Now()}
 		saveDB()
+		FetchFeed()
 	}
 	if err2 := json.Unmarshal(db, &feed); err != nil {
 		log.Println(err2)
 	}
+	if time.Until(feed.Update) < -30*time.Minute {
+		log.Println("Database exceeds store time. Updating...")
+		FetchFeed()
+	}
 }
 
-func FetchRawXml(c *gin.Context) {
+// Controllers
+func FetchRawFeed(c *gin.Context) {
 	c.JSON(http.StatusOK, feed)
 }
 
+func HomePage(c *gin.Context) {
+	c.HTML(http.StatusOK, "index.html", gin.H{
+		"list": feed.Article,
+	})
+}
+
+// Utils
 func FetchFeed() {
-	feed.Data = nil
+	log.Println("Fetching feeds...")
+	// Clear current database
+	feed.Article = nil
+	feed.Author = nil
+	// Fetch articles, authors from feeds
 	for _, data := range config.Feeds {
 		res, err := feedreader.Fetch(data)
 		if err != nil {
-			log.Fatal(err)
+			log.Println("Fetch RSS failed: ", err)
+			// TODO: Load cache and return
 		} else {
+			// !!! res.Author might be NULL !!!
+			if res.Author != nil {
+				feed.Author = append(feed.Author, Author{res.Author.Name, res.Author.Email, res.Author.Uri, res.Description})
+			}
 			for _, item := range res.Items {
-				feed.Data = append(feed.Data, Article{Title: item.Title, Time: item.PubDate, Content: getContent(item.Content), Url: item.Link})
+				feed.Article = append(feed.Article, Article{Title: item.Title, Time: item.PubDate, Content: getContent(item.Content), Url: item.Link})
 			}
 		}
 	}
-	saveDB()
-	feed.Update = time.Now()
-}
-
-func GenPage(c *gin.Context) {
-	if len(feed.Data) == 0 {
-		FetchFeed()
-	}
-	c.HTML(http.StatusOK, "index.html", gin.H{
-		"list": feed.Data,
+	// Sort articles by time desc
+	sort.SliceStable(feed.Article, func(i, j int) bool {
+		return feed.Article[i].Time.Unix() > feed.Article[j].Time.Unix()
 	})
+	feed.Update = time.Now()
+	saveDB()
 }
 
 func AddFeed(url string) {
@@ -98,6 +123,7 @@ func saveConfig() {
 		log.Panic("Failed to write config")
 	}
 }
+
 func saveDB() {
 	data, err := json.Marshal(feed)
 	if err != nil {
@@ -109,11 +135,11 @@ func saveDB() {
 }
 
 func getContent(content string) string {
-	doc, err := goquery.NewDocument(content)
-	if err != nil {
-		log.Print("Compile article content error.")
-		return content
+	reg := regexp.MustCompile("<p>(.*?)</p>")
+	arr := reg.FindStringSubmatch(content)
+	if len(arr) == 0 {
+		log.Println("Parse content error: ", arr)
+		return ""
 	}
-	res := doc.Find("p")
-	return res.Text()
+	return arr[len(arr)-1]
 }
