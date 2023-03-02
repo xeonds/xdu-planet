@@ -22,6 +22,7 @@
       width: calc(100% - 1.5rem);
       max-width: 800px;
     }
+
     footer {
       margin-top: 6rem;
       padding: 2rem;
@@ -44,12 +45,35 @@
     .article-time {
       color: gray;
     }
+    .mon-seperator {
+      padding-top: 4rem;
+      padding-bottom: 1.5rem;
+      width: calc(100% - 1rem);
+      max-width: 800px;
+      text-align: left;
+      font-size: 1.8rem;
+      color: black;
+    }
+    .timeline {
+      width: 0.75rem;
+      height: 0.75rem;
+      clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
+      background-color: red;
+      display: block;
+      position: relative;
+      top: calc(1rem + 1.5 * 0.85rem / 2 - 0.75rem / 2);
+      left: -1rem;
+    }
   </style>
   <body>
     <div class="container-fluid" id="app">
       {{template "header"}}
       <main class="article-list">
         {{range $i,$v := .list}}
+        <div class="mon-seperator" v-if="dispTimeLine('{{$v.Time}}')">
+          <div class="timeline"></div>
+          {{$v.Time}}
+        </div>
         <article class="text-left">
           <a href="{{$v.Url}}" target="_blank" class="article-title">
             <h3>{{$v.Title}}</h3> </a
@@ -61,5 +85,35 @@
       </main>
       {{template "footer"}}
     </div>
+
+    <script>
+      const { createApp } = Vue;
+      createApp({
+        data() {
+          return {
+            time: "",
+          };
+        },
+        methods: {
+          dispTimeLine: function (time) {
+            let that = this;
+            let date1 = new Date(time);
+            if (that.time == "") {
+              that.time = date1;
+              return true;
+            }
+            if (
+              that.time.getFullYear() === date1.getFullYear() &&
+              that.time.getMonth() === date1.getMonth()
+            ) {
+              that.time = date1;
+              return false;
+            }
+            that.time = date1;
+            return true;
+          },
+        },
+      }).mount("#app");
+    </script>
   </body>
 </html>
