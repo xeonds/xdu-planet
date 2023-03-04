@@ -72,7 +72,7 @@
         {{range $i,$v := .list}}
         <div class="mon-seperator" v-if="dispTimeLine('{{$v.Time}}')">
           <div class="timeline"></div>
-          {{$v.Time}}
+          <div v-html="parseTime('{{$v.Time}}')"></div>
         </div>
         <article class="text-left">
           <a href="{{$v.Url}}" target="_blank" class="article-title">
@@ -111,6 +111,10 @@
             }
             that.time = date1;
             return true;
+          },
+          parseTime: function (time) {
+            let date1 = new Date(time);
+            return `${date1.getUTCFullYear()}年${date1.getMonth() + 1}月`;
           },
         },
       }).mount("#app");
