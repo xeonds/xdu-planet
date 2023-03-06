@@ -1,0 +1,5 @@
+version: 1
+feeds:
+    - "https://moefactory.com/feed"
+    - "https://xeonds.github.io/atom"
+    - "https://holynia.github.io/atom"
