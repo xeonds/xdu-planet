@@ -175,4 +175,7 @@ figure {
     word-break: break-all;
   }
 }
+img {
+  width: 100%;
+}
 </style>
