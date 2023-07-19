@@ -25,6 +25,15 @@
       诈尸更新一下（溜
     </el-text>
   </p>
+  <el-divider>Special Thanks</el-divider>
+  <p>
+    <el-text
+      >感谢Superbart提供的UI设计思路<del>以及让我想起来这个项目</del></el-text
+    >
+  </p>
+  <p>
+    <el-text>以及，感谢我的朋友，Ray</el-text>
+  </p>
 </template>
 
 <style>
