@@ -1,0 +1,45 @@
+name: hourly-xdu-planet
+
+on:
+  schedule:
+    - cron: '*/15 * * * *'
+  push:
+    branches:
+      - web
+      - master
+      - develop
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+      with:
+        ref: master
+        path: ./
+    - name: Checkout code
+      uses: actions/checkout@v2
+      with:
+        ref: deploy
+        path: ./deploy
+    
+    - name: Setup Node
+      uses: actions/setup-node@v2
+      with:
+        node-version: 17
+    - name: Setup Go
+      uses: actions/setup-go@v2
+      with:
+        go-version: 1.19
+
+    - name: Build frontend
+      run: cd frontend && npm install pnpm -g && pnpm install && pnpm run build && mkdir ../public && cp -r ./dist/* ../public/ && cd ..
+    - name: Build main program
+      run: go mod tidy && go build -o ./public/xdu-planet && cd public && cp ../deploy/config.yml ./ && ./xdu-planet -fetch
+    - name: Deploy
+      uses: JamesIves/github-pages-deploy-action@releases/v3
+      with:
+        REPOSITORY_NAME: xeonds/xdu-planet
+        BRANCH: web
+        FOLDER: public
