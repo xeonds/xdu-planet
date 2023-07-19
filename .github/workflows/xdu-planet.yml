@@ -18,11 +18,11 @@ jobs:
       with:
         ref: master
         path: ./
-    - name: Checkout code
+    - name: Checkout deploy
       uses: actions/checkout@v2
       with:
         ref: deploy
-        path: ./deploy
+        path: ./
     
     - name: Setup Node
       uses: actions/setup-node@v2
@@ -43,10 +43,10 @@ jobs:
     - name: Copy config
       run: cp deploy/config.yml public/ && ls deploy && ls public
     - name: Build main program
-      run: go mod tidy && go build -o ./public/xdu-planet
+      run: go mod tidy && go build
 
     - name: Run generate
-      run: cd public && ./xdu-planet -fetch && cd ..
+      run: ./xdu-planet -fetch && mv db.json public/
 
     - name: Deploy
       uses: JamesIves/github-pages-deploy-action@releases/v3
