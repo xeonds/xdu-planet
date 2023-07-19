@@ -22,7 +22,7 @@ jobs:
       uses: actions/checkout@v2
       with:
         ref: deploy
-        path: ./
+        path: ./deploy
     
     - name: Setup Node
       uses: actions/setup-node@v2
@@ -35,13 +35,13 @@ jobs:
 
     - name: Make dir
       run: mkdir public
+    - name: Copy config
+      run: cp deploy/config.yml ./ && ls
 
     - name: Build frontend
       run: cd frontend && npm install pnpm -g && pnpm install && pnpm run build && cd ..
     - name: Copy dist
       run:  cp -r frontend/dist/* public/
-    - name: Copy config
-      run: cp deploy/config.yml public/ && ls deploy && ls public
     - name: Build main program
       run: go mod tidy && go build
 
