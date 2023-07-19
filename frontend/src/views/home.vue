@@ -126,7 +126,7 @@ export default {
   },
   methods: {
     fetchFeed() {
-      http.get("/feed").then((res) => {
+      http.get("db.json").then((res) => {
         if (res.status === 200) {
           this.authors = res.data.author;
         }
