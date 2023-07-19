@@ -69,7 +69,7 @@ func main() {
 
 func init() {
 	// Load/Initialize the config
-	file, err := os.ReadFile("config.yaml")
+	file, err := os.ReadFile("config.yml")
 	if err != nil {
 		log.Println("No config file found, creating...")
 		config = &Config{Version: 1, Feeds: []string{""}}
@@ -101,7 +101,7 @@ func SaveConfig() {
 	if err != nil {
 		log.Fatal("Failed to marshal config: ", err)
 	}
-	if err := os.WriteFile("config.yaml", data, 0644); err != nil {
+	if err := os.WriteFile("config.yml", data, 0644); err != nil {
 		log.Panic("Failed to write config")
 	}
 }
