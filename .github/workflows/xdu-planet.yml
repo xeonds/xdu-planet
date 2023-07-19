@@ -2,7 +2,7 @@ name: hourly-xdu-planet
 
 on:
   schedule:
-    - cron: '*/15 * * * *'
+    - cron: '10 4,10,22 * * *'
   push:
     branches:
       - master
