@@ -130,7 +130,7 @@ func FetchFeed() {
 			for _, item := range res.Items {
 				articles = append(articles, Article{item.Title, item.PubDate, item.Content, item.Link})
 			}
-			feed.Author = append(feed.Author, Author{res.Title, res.Author.Email, res.Author.Uri, res.Description, articles})
+			feed.Author = append(feed.Author, Author{res.Title, res.Author.Email, res.Link, res.Description, articles})
 		}
 	}
 	feed.Update = time.Now()

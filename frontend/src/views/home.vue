@@ -2,7 +2,7 @@
   <div class="header">
     <div class="avatar all">
       <el-row>
-        <el-avatar @click="author = ''"></el-avatar>
+        <el-avatar @click="author = ''"> All</el-avatar>
       </el-row>
       <el-row>
         <el-text>All</el-text>
@@ -12,10 +12,12 @@
       <div class="authors">
         <div class="avatar" v-for="item in authors">
           <el-row>
-            <el-avatar @click="author = item.name"></el-avatar>
+            <el-avatar @click="author = item.name">{{
+              item.name.substring(0, 1)
+            }}</el-avatar>
           </el-row>
           <el-row>
-            <el-text>{{ item.name }}</el-text>
+            <el-text style="white-space: nowrap">{{ item.name }}</el-text>
           </el-row>
         </div>
       </div>
@@ -25,7 +27,7 @@
   <el-timeline class="timeline">
     <el-timeline-item
       v-for="(item, i) in filteredArticles"
-      :timestamp="item?.time"
+      :timestamp="item.time"
       placement="top"
     >
       <el-card>
@@ -60,6 +62,7 @@
 </template>
 <script>
 import http from "../utils/http";
+import day from "../utils/day";
 
 export default {
   data() {
@@ -84,16 +87,26 @@ export default {
   },
   computed: {
     allArticles() {
-      return this.authors.reduce((prev, cur) => {
-        return prev.concat(
-          cur.article?.map((item) => {
-            return {
-              ...item,
-              name: cur.name,
-            };
-          })
-        );
-      }, []);
+      return this.authors
+        .reduce((prev, cur) => {
+          return prev.concat(
+            cur.article?.map((item) => {
+              return {
+                ...item,
+                name: cur.name,
+              };
+            })
+          );
+        }, [])
+        .map((item) => {
+          return {
+            ...item,
+            time: day(item.time).format("YYYY-MM-DD HH:mm:ss"),
+          };
+        })
+        .sort((a, b) => {
+          return new Date(b.time) - new Date(a.time);
+        });
     },
     filteredArticles() {
       if (this.author) {
@@ -103,6 +116,7 @@ export default {
             return {
               ...item,
               name: this.author,
+              time: day(item.time).format("YYYY-MM-DD HH:mm:ss"),
             };
           });
       } else {
