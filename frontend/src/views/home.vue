@@ -26,11 +26,16 @@
   <el-divider>Articles</el-divider>
   <el-timeline class="timeline">
     <el-timeline-item
-      v-for="(item, i) in filteredArticles"
-      :timestamp="item.time"
+      v-for="(item, index) in groupedArticles"
+      :timestamp="item.date"
+      :type="item.list[0].type"
+      :hollow="item.list[0].hollow"
       placement="top"
     >
-      <el-card>
+      <el-card
+        style="box-shadow: none; margin-bottom: 1rem"
+        v-for="(article, subIndex) in item.list"
+      >
         <template #header>
           <el-row
             style="
@@ -40,35 +45,62 @@
             "
           >
             <span>
-              <el-text class="article-title">{{ item?.title }}</el-text
+              <el-text class="article-title">{{ article.title }}</el-text
               ><br />
               <el-text type="primary" style="margin-right: 0.5rem">|</el-text>
-              <el-text>{{ item?.name }}</el-text>
+              <el-text>{{ article.name }}</el-text>
             </span>
-            <el-button class="button" text @click="curr = curr == i ? -1 : i"
-              >Read</el-button
+            <div
+              style="display: flex; flex-flow: row wrap; justify-content: right"
             >
+              <el-button
+                text
+                @click="
+                  curr =
+                    curr == `${index},${subIndex}` ? '' : `${index},${subIndex}`
+                "
+                >{{
+                  curr == `${index},${subIndex}` ? "Hide" : "Read"
+                }}</el-button
+              >
+              <el-button text @click="viewUrl(article.url)"
+                >Source Link</el-button
+              >
+            </div>
           </el-row>
         </template>
-        <div style="padding: 1rem" :class="{ 'article-fold': i != curr }">
+        <div
+          style="
+            padding: 1rem;
+            border-top: 1px solid var(--el-card-border-color);
+          "
+          :class="{ 'article-fold': `${index},${subIndex}` != curr }"
+        >
           <el-text
-            v-html="item?.content"
+            v-html="article.content"
             style="white-space: pre-wrap; word-break: break-all"
           ></el-text>
         </div>
       </el-card>
     </el-timeline-item>
   </el-timeline>
+  <el-pagination
+    layout="prev, pager, next"
+    :total="filteredArticles.length"
+    :page-size="pageSize"
+    v-model:current-page="currPage"
+  />
 </template>
 <script>
 import http from "../utils/http";
 import day from "../utils/day";
+import axios from "axios";
 
 export default {
   data() {
     return {
       author: "",
-      curr: -1,
+      curr: "",
       authors: [
         {
           name: "张三",
@@ -79,7 +111,8 @@ export default {
           article: [{ title: "test title", content: "test content" }],
         },
       ],
-      isShow: false,
+      pageSize: 16,
+      currPage: 1,
     };
   },
   created() {
@@ -90,7 +123,7 @@ export default {
       return this.authors
         .reduce((prev, cur) => {
           return prev.concat(
-            cur.article?.map((item) => {
+            cur.article.map((item) => {
               return {
                 ...item,
                 name: cur.name,
@@ -109,28 +142,76 @@ export default {
         });
     },
     filteredArticles() {
-      if (this.author) {
-        return this.authors
-          .find((item) => item.name === this.author)
-          .article.map((item) => {
-            return {
-              ...item,
-              name: this.author,
-              time: day(item.time).format("YYYY-MM-DD HH:mm:ss"),
-            };
-          });
-      } else {
-        return this.allArticles;
-      }
+      return this.allArticles
+        .filter((item) => {
+          return this.author ? item.name === this.author : true;
+        })
+        .reduce((prev, cur) => {
+          if (
+            day(cur.time).format("M") !=
+            day(prev[prev.length - 1]?.time).format("M")
+          ) {
+            return prev.concat({
+              ...cur,
+              type: "primary",
+            });
+          }
+          return prev.concat(cur);
+        }, [])
+        .reduce((prev, cur) => {
+          if (
+            day(cur.time).format("YYYY") !=
+            day(prev[prev.length - 1]?.time).format("YYYY")
+          ) {
+            return prev.concat({
+              ...cur,
+              hollow: true,
+            });
+          }
+          return prev.concat(cur);
+        }, []);
+    },
+    groupedArticles() {
+      return this.filteredArticles
+        .slice(
+          (this.currPage - 1) * this.pageSize,
+          this.currPage * this.pageSize
+        )
+        .reduce((prev, cur) => {
+          const date = cur.time.split(" ")[0];
+          const index = prev.findIndex((item) => item.date === date);
+          if (index === -1) {
+            prev.push({
+              date,
+              list: [cur],
+            });
+          } else {
+            prev[index].list.push(cur);
+          }
+          return prev;
+        }, []);
+    },
+  },
+  watch: {
+    author() {
+      this.currPage = 1;
     },
   },
   methods: {
     fetchFeed() {
-      http.get("db.json").then((res) => {
-        if (res.status === 200) {
+      axios
+        .get("db.json")
+        .then((res) => {
           this.authors = res.data.author;
-        }
-      });
+        })
+        .catch(() => {
+          http.get("/feed").then((res) => {
+            this.authors = res.data.author;
+          });
+        });
+    },
+    viewUrl(url) {
+      window.open(url);
     },
   },
 };
@@ -162,9 +243,12 @@ export default {
   flex-flow: column nowrap;
   align-items: center;
 }
+.el-avatar {
+  background-color: var(--el-color-primary);
+}
 .el-avatar:hover {
   cursor: pointer;
-  box-shadow: 0 0 10px #ccc;
+  box-shadow: 0 0 10px var(--el-color-primary);
 }
 .all {
   border-right: #333 1px dotted;
@@ -191,5 +275,8 @@ figure {
 }
 img {
   width: 100%;
+}
+.el-card__header {
+  border: none;
 }
 </style>

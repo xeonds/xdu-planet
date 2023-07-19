@@ -13,7 +13,7 @@
     </el-main>
     <el-footer style="border-top: 1px solid #ccc; padding: 1rem">
       <el-row>
-        <el-col :span="12">
+        <el-col :span="24">
           <el-text>2023 © XDU-Planet</el-text>
           <el-text type="primary" style="margin: 1rem">|</el-text>
           <el-text>Powered by Vue.js</el-text>
@@ -26,8 +26,8 @@
 <style scoped>
 .title {
   font-size: 1.25rem;
-  font-weight: 400;
-  margin-right: 1rem;
+  font-weight: 600;
+  color: var(--el-color-primary);
 }
 .el-header {
   padding: 0;
@@ -36,5 +36,20 @@
   width: 100vw;
   max-width: 1000px;
   margin: 0 auto;
+  min-height: calc(100vh - 64px - 64px);
+}
+</style>
+
+<style>
+:root {
+  --el-color-primary: #ee7171;
+  --el-menu-hover-bg-color: #ffe6e6;
+}
+html.dark {
+  /* 自定义深色背景颜色 */
+  --el-bg-color: #626aef;
+}
+.flex-grow {
+  flex-grow: 1;
 }
 </style>
