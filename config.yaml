@@ -1,5 +1,9 @@
 version: 1
 feeds:
-    - "https://moefactory.com/feed"
-    - "https://xeonds.github.io/atom"
-    - "https://holynia.github.io/atom"
+  - "https://www.superbart.xyz/index.xml"
+  - "https://xeonds.github.io/atom"
+  - "https://holynia.github.io/atom"
+  - "https://ray.al/feed"
+  - "https://blog.woooo.tech/index.xml"
+  - "https://blog.ksfu.top/atom.xml"
+  - "https://hawa130.com/feed/"

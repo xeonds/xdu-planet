@@ -5,10 +5,9 @@ go 1.19
 require (
 	github.com/gin-gonic/gin v1.8.1
 	github.com/m3ng9i/feedreader v0.0.0-20150817095054-5a47baf164a1
-	gopkg.in/yaml.v3 v3.0.1
 )
 
-require github.com/gin-contrib/cors v1.4.0 // indirect
+require github.com/gin-contrib/cors v1.4.0
 
 require (
 	github.com/PuerkitoBio/goquery v1.8.0 // indirect
@@ -33,5 +32,5 @@ require (
 	golang.org/x/sys v0.4.0 // indirect
 	golang.org/x/text v0.6.0 // indirect
 	google.golang.org/protobuf v1.28.0 // indirect
-	gopkg.in/yaml.v2 v2.4.0 // indirect
+	gopkg.in/yaml.v2 v2.4.0
 )

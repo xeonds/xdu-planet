@@ -1,62 +1,40 @@
 <template>
-  <div class="container-fluid">
-    <nav class="navbar navbar-expand-sm bg-light navbar-light fixed-top">
-      <router-link class="navbar-brand" to="/">XDU-Planet</router-link>
-      <button
-        class="navbar-toggler"
-        type="button"
-        data-toggle="collapse"
-        data-target="#collapsibleNavbar"
-      >
-        <span class="navbar-toggler-icon"></span>
-      </button>
-      <div class="collapse navbar-collapse" id="collapsibleNavbar">
-        <ul class="navbar-nav">
-          <li class="nav-item">
-            <router-link class="nav-link" to="/">主页</router-link>
-          </li>
-          <li class="nav-item">
-            <router-link class="nav-link" to="/author">成员</router-link>
-          </li>
-          <!-- <li class="nav-item">
-        <router-link class="nav-link" to="/analyze">统计</router-link>
-      </li> -->
-          <li class="nav-item">
-            <router-link class="nav-link" to="/about">关于</router-link>
-          </li>
-        </ul>
-      </div>
-    </nav>
-    <router-view />
-    <Footer></Footer>
-  </div>
+  <el-scrollbar style="width: 100vw; height: 100vh">
+    <el-header>
+      <el-menu mode="horizontal" :ellipsis="false" router>
+        <el-menu-item class="title" route="/">XDU-Planet</el-menu-item>
+        <el-menu-item index="1" route="/">主页</el-menu-item>
+        <el-menu-item index="2" route="/member">成员</el-menu-item>
+        <el-menu-item index="3" route="/about">关于</el-menu-item>
+      </el-menu>
+    </el-header>
+    <el-main>
+      <router-view />
+    </el-main>
+    <el-footer style="border-top: 1px solid #ccc; padding: 1rem">
+      <el-row>
+        <el-col :span="12">
+          <el-text>2023 © XDU-Planet</el-text>
+          <el-text type="primary" style="margin: 1rem">|</el-text>
+          <el-text>Powered by Vue.js</el-text>
+        </el-col>
+      </el-row>
+    </el-footer>
+  </el-scrollbar>
 </template>
 
-<script>
-import FooterComponent from "./components/Footer.vue";
-
-export default {
-  name: "App",
-  created: function () {
-    this.fetchData();
-  },
-  components: {
-    Footer: FooterComponent,
-  },
-  methods: {
-    fetchData: async function () {
-      const response = await this.axios.get("db.json");
-      this.$store.commit("setData", response.data);
-    },
-  },
-};
-</script>
-
-<style>
-.container-fluid {
-  display: flex;
-  flex-flow: column;
-  align-items: center;
+<style scoped>
+.title {
+  font-size: 1.25rem;
+  font-weight: 400;
+  margin-right: 1rem;
+}
+.el-header {
   padding: 0;
+}
+.el-main {
+  width: 100vw;
+  max-width: 1000px;
+  margin: 0 auto;
 }
 </style>
