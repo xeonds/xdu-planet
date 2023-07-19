@@ -18,11 +18,19 @@ jobs:
       with:
         ref: master
         path: ./
+    - name: Setup Node
+      uses: actions/setup-node@v2
+      with:
+        node-version: 14
+    - name: Install dependencies
+      run: cd frontend && npm install pnpm -g && pnpm install
+    - name: Build
+      run: pnpm run build && cd ..
     - name: Setup Go
       uses: actions/setup-go@v2
       with:
         go-version: 1.19
     - name: build
-      run: go build
+      run: go mod tidy && go build 
     - name: run
       run: ./xdu-planet -fetch
