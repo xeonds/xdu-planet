@@ -5,9 +5,9 @@ on:
     - cron: '*/15 * * * *'
   push:
     branches:
-      - web
       - master
       - develop
+      - deploy
 
 jobs:
   build:
