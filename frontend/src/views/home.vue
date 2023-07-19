@@ -24,24 +24,36 @@
   <el-divider>Articles</el-divider>
   <el-timeline class="timeline">
     <el-timeline-item
-      v-for="item in filteredArticles"
+      v-for="(item, i) in filteredArticles"
       :timestamp="item?.time"
       placement="top"
     >
-      <el-card class="article">
+      <el-card>
         <template #header>
-          <el-row>
-            <el-col :span="12">
-              <el-text>{{ item?.title }}</el-text>
-              <el-text type="primary" style="margin-inline: 1rem">|</el-text>
+          <el-row
+            style="
+              display: flex;
+              flex-flow: row;
+              justify-content: space-between;
+            "
+          >
+            <span>
+              <el-text class="article-title">{{ item?.title }}</el-text
+              ><br />
+              <el-text type="primary" style="margin-right: 0.5rem">|</el-text>
               <el-text>{{ item?.name }}</el-text>
-            </el-col>
-            <el-col :span="12" style="text-align: right">
-              <el-button class="button" text>Read</el-button>
-            </el-col>
+            </span>
+            <el-button class="button" text @click="curr = curr == i ? -1 : i"
+              >Read</el-button
+            >
           </el-row>
         </template>
-        <el-text v-html="item?.content" style="max-height: 4rem"></el-text>
+        <div style="padding: 1rem" :class="{ 'article-fold': i != curr }">
+          <el-text
+            v-html="item?.content"
+            style="white-space: pre-wrap; word-break: break-all"
+          ></el-text>
+        </div>
       </el-card>
     </el-timeline-item>
   </el-timeline>
@@ -53,20 +65,14 @@ export default {
   data() {
     return {
       author: "",
+      curr: -1,
       authors: [
         {
           name: "张三",
-          article: [
-            { title: "test title", content: "test content" },
-            { title: "test title", content: "test content" },
-          ],
-        },
-        {
-          name: "李四",
           article: [{ title: "test title", content: "test content" }],
         },
         {
-          name: "王五",
+          name: "李四",
           article: [{ title: "test title", content: "test content" }],
         },
       ],
@@ -91,7 +97,14 @@ export default {
     },
     filteredArticles() {
       if (this.author) {
-        return this.allArticles.filter((item) => item?.name === this.author);
+        return this.authors
+          .find((item) => item.name === this.author)
+          .article.map((item) => {
+            return {
+              ...item,
+              name: this.author,
+            };
+          });
       } else {
         return this.allArticles;
       }
@@ -102,7 +115,6 @@ export default {
       http.get("/feed").then((res) => {
         if (res.status === 200) {
           this.authors = res.data.author;
-          console.log(this.authors);
         }
       });
     },
@@ -124,10 +136,9 @@ export default {
   flex-flow: row nowrap;
   align-items: center;
 }
-.article {
-  margin-bottom: 1rem;
+.article-fold {
+  display: none;
 }
-
 .timeline {
   padding-inline-start: 0px;
 }
@@ -145,10 +156,23 @@ export default {
   border-right: #333 1px dotted;
   padding-right: 1rem;
 }
-</style>
-
-<style>
+.article-title {
+  font-size: 1rem;
+  font-weight: 400;
+}
 p {
   text-indent: 2rem;
+}
+</style>
+
+<style lang="less">
+.el-card__body {
+  padding: 0px;
+}
+figure {
+  margin: 0.5rem;
+  .code {
+    word-break: break-all;
+  }
 }
 </style>

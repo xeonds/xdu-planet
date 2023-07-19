@@ -8,7 +8,7 @@
         <el-menu-item index="3" route="/about">关于</el-menu-item>
       </el-menu>
     </el-header>
-    <el-main class="main">
+    <el-main>
       <router-view />
     </el-main>
     <el-footer style="border-top: 1px solid #ccc; padding: 1rem">
@@ -31,5 +31,10 @@
 }
 .el-header {
   padding: 0;
+}
+.el-main {
+  width: 100vw;
+  max-width: 1000px;
+  margin: 0 auto;
 }
 </style>
