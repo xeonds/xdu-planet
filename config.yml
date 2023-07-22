@@ -4,6 +4,6 @@ feeds:
   - "https://xeonds.github.io/atom"
   - "https://holynia.github.io/atom"
   - "https://ray.al/feed"
-  - "https://blog.woooo.tech/index.xml"
+# - "https://blog.woooo.tech/index.xml"
   - "https://blog.ksfu.top/atom.xml"
   - "http://blog.xiaobeo.top/index.php/feed/"
