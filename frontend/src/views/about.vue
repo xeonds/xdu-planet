@@ -25,6 +25,12 @@
       诈尸更新一下（溜
     </el-text>
   </p>
+  <p>
+    <el-text>
+      2023.9.20
+      加了个正文样式渲染器，可算不丑了。
+    </el-text>
+  </p>
   <el-divider>Special Thanks</el-divider>
   <p>
     <el-text

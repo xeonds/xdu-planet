@@ -25,78 +25,51 @@
   </div>
   <el-divider>Articles</el-divider>
   <el-timeline class="timeline">
-    <el-timeline-item
-      v-for="(item, index) in groupedArticles"
-      :timestamp="item.date"
-      :type="item.list[0].type"
-      :hollow="item.list[0].hollow"
-      placement="top"
-    >
-      <el-card
-        style="box-shadow: none; margin-bottom: 1rem"
-        v-for="(article, subIndex) in item.list"
-      >
+    <el-timeline-item v-for="(item, index) in groupedArticles" :timestamp="item.date" :type="item.list[0].type"
+      :hollow="item.list[0].hollow" placement="top">
+      <el-card style="box-shadow: none; margin-bottom: 1rem" v-for="(article, subIndex) in item.list">
         <template #header>
-          <el-row
-            style="
+          <el-row style="
               display: flex;
               flex-flow: row;
               justify-content: space-between;
-            "
-          >
+            ">
             <span>
-              <el-text class="article-title">{{ article.title }}</el-text
-              ><br />
+              <el-text class="article-title">{{ article.title }}</el-text><br />
               <el-text type="primary" style="margin-right: 0.5rem">|</el-text>
               <el-text>{{ article.name }}</el-text>
             </span>
-            <div
-              style="display: flex; flex-flow: row wrap; justify-content: right"
-            >
-              <el-button
-                text
-                @click="
-                  curr =
-                    curr == `${index},${subIndex}` ? '' : `${index},${subIndex}`
-                "
-                >{{
-                  curr == `${index},${subIndex}` ? "Hide" : "Read"
-                }}</el-button
-              >
-              <el-button text @click="viewUrl(article.url)"
-                >Source Link</el-button
-              >
+            <div style="display: flex; flex-flow: row wrap; justify-content: right">
+              <el-button text @click="
+                curr =
+                curr == `${index},${subIndex}` ? '' : `${index},${subIndex}`
+                ">{{
+    curr == `${index},${subIndex}` ? "Hide" : "Read"
+  }}</el-button>
+              <el-button text @click="viewUrl(article.url)">Source Link</el-button>
             </div>
           </el-row>
         </template>
-        <div
-          style="
-            padding: 1rem;
+        <div style="
             border-top: 1px solid var(--el-card-border-color);
-          "
-          :class="{ 'article-fold': `${index},${subIndex}` != curr }"
-        >
-          <el-text
-            v-html="article.content"
-            style="white-space: pre-wrap; word-break: break-all"
-          ></el-text>
+          " :class="{ 'article-fold': `${index},${subIndex}` != curr }">
+          <mavon-editor v-model="article.content" :subfield="false" :defaultOpen="'preview'" :toolbarsFlag="false"
+            :boxShadow="false" :transition="false" />
         </div>
       </el-card>
     </el-timeline-item>
   </el-timeline>
-  <el-pagination
-    layout="prev, pager, next"
-    :total="filteredArticles.length"
-    :page-size="pageSize"
-    v-model:current-page="currPage"
-  />
+  <el-pagination layout="prev, pager, next" :total="filteredArticles.length" :page-size="pageSize"
+    v-model:current-page="currPage" />
 </template>
 <script>
+import { mavonEditor } from "mavon-editor";
 import http from "../utils/http";
 import day from "../utils/day";
 import axios from "axios";
 
 export default {
+  components: { mavonEditor },
   data() {
     return {
       author: "",
@@ -135,6 +108,7 @@ export default {
           return {
             ...item,
             time: day(item.time).format("YYYY-MM-DD HH:mm:ss"),
+            content: this.getBody(item.content),
           };
         })
         .sort((a, b) => {
@@ -213,6 +187,13 @@ export default {
     viewUrl(url) {
       window.open(url);
     },
+    getBody(content) {
+      var REG_BODY = /<body[^>]*>([\s\S]*)<\/body>/;
+      var result = REG_BODY.exec(content);
+      if (result && result.length === 2)
+        return result[1];
+      return content;
+    }
   },
 };
 </script>
@@ -225,41 +206,46 @@ export default {
   flex-flow: row nowrap;
   align-items: center;
 }
+
 .authors {
   padding-inline: 1rem;
   display: flex;
   flex-flow: row nowrap;
   align-items: center;
 }
+
 .article-fold {
   display: none;
 }
+
 .timeline {
   padding-inline-start: 0px;
 }
+
 .avatar {
   margin: 10px 10px;
   display: flex;
   flex-flow: column nowrap;
   align-items: center;
 }
+
 .el-avatar {
   background-color: var(--el-color-primary);
 }
+
 .el-avatar:hover {
   cursor: pointer;
   box-shadow: 0 0 10px var(--el-color-primary);
 }
+
 .all {
   border-right: #333 1px dotted;
   padding-right: 1rem;
 }
+
 .article-title {
   font-size: 1rem;
   font-weight: 400;
-}
-p {
-  text-indent: 2rem;
 }
 </style>
 
@@ -267,15 +253,7 @@ p {
 .el-card__body {
   padding: 0px;
 }
-figure {
-  margin: 0.5rem;
-  .code {
-    word-break: break-all;
-  }
-}
-img {
-  width: 100%;
-}
+
 .el-card__header {
   border: none;
 }
