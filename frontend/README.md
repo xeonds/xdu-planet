@@ -1,6 +1,8 @@
-# Vue 3 + Vite
+# Frontend
 
-This template should help get you started developing with Vue 3 in Vite. The template uses Vue 3 `<script setup>` SFCs, check out the [script setup docs](https://v3.vuejs.org/api/sfc-script-setup.html#sfc-script-setup) to learn more.
+Vue3+Vite+pnpm+ElementPlus+Ts的前端。功能倒是都实现了，就是动效和分页没做。
+
+蹲个pr）
 
 ## Recommended IDE Setup
 

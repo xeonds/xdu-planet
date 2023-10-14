@@ -2,3 +2,5 @@ build
 *.json
 *.exe
 config.yaml
+/db/
+.idea
