@@ -45,7 +45,7 @@ jobs:
       run: go mod tidy && go build
 
     - name: Run generate
-      run: ./xdu-planet -fetch && mv db.json index.json db/ public/
+      run: mkdir db/ && ./xdu-planet -fetch && mv db.json index.json db/ public/
 
     - name: Deploy
       uses: JamesIves/github-pages-deploy-action@releases/v3
