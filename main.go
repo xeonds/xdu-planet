@@ -108,7 +108,17 @@ func SaveConfig() {
 	}
 }
 func SaveDB() {
-	feedCopy := *feed
+	// write to db.json
+	data, err := json.Marshal(feed)
+	if err != nil {
+		log.Fatal("Failed to marshal db: ", err)
+	}
+	if err := os.WriteFile("db.json", data, 0644); err != nil {
+		log.Panic("Failed to write db")
+	}
+	// create index db
+	var feedCopy Feed
+	json.Unmarshal(data, &feedCopy) // deep copy the array
 	if err := os.MkdirAll("db", 0644); err != nil && !os.IsExist(err) {
 		log.Fatalln("Failed to create db directory...")
 	}
@@ -121,18 +131,11 @@ func SaveDB() {
 			feedCopy.Author[i].Article[j].Content = fileName
 		}
 	}
-	data, err := json.Marshal(feedCopy)
+	data, err = json.Marshal(feedCopy)
 	if err != nil {
 		log.Fatal("Failed to marshal index: ", err)
 	}
 	if err := os.WriteFile("index.json", data, 0644); err != nil {
-		log.Panic("Failed to write db")
-	}
-	data, err = json.Marshal(feed)
-	if err != nil {
-		log.Fatal("Failed to marshal db: ", err)
-	}
-	if err := os.WriteFile("db.json", data, 0644); err != nil {
 		log.Panic("Failed to write db")
 	}
 }
