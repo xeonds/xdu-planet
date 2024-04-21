@@ -4,11 +4,11 @@ import (
 	"embed"
 	"encoding/json"
 	"flag"
+	"fmt"
 	"io/fs"
 	"log"
 	"net/http"
 	"os"
-	"regexp"
 	"time"
 
 	"github.com/gin-contrib/cors"
@@ -47,26 +47,6 @@ type Config struct {
 	Feeds   []string `yaml:"feeds"`
 }
 
-func main() {
-	var updateDB bool
-
-	flag.BoolVar(&updateDB, "fetch", false, "Fetch and update feed database")
-	flag.Parse()
-
-	switch {
-	case updateDB:
-		FetchFeed()
-	default:
-		r := gin.Default()
-		r.Use(cors.Default())
-		initRouter(r)
-		crontab := cron.New(cron.WithSeconds())
-		crontab.AddFunc("0 15 * * * *", FetchFeed)
-		crontab.Start()
-		panic(r.Run(":8192"))
-	}
-}
-
 func init() {
 	// Load/Initialize the config
 	file, err := os.ReadFile("config.yml")
@@ -95,6 +75,28 @@ func init() {
 	}
 }
 
+func main() {
+	var updateDB bool
+
+	flag.BoolVar(&updateDB, "fetch", false, "Fetch and update feed database")
+	flag.Parse()
+
+	switch {
+	case updateDB:
+		FetchFeed()
+	default:
+		r := gin.Default()
+		r.Use(cors.Default())
+		initRouter(r)
+		crontab := cron.New(cron.WithSeconds())
+		if _, err := crontab.AddFunc("0 15 * * * *", FetchFeed); err != nil {
+			panic("Failed to start feed update daemon")
+		}
+		crontab.Start()
+		panic(r.Run(":8192"))
+	}
+}
+
 // utils
 func SaveConfig() {
 	data, err := yaml.Marshal(config)
@@ -106,11 +108,34 @@ func SaveConfig() {
 	}
 }
 func SaveDB() {
+	// write to db.json
 	data, err := json.Marshal(feed)
 	if err != nil {
 		log.Fatal("Failed to marshal db: ", err)
 	}
 	if err := os.WriteFile("db.json", data, 0644); err != nil {
+		log.Panic("Failed to write db")
+	}
+	// create index db
+	var feedCopy Feed
+	json.Unmarshal(data, &feedCopy) // deep copy the array
+	if err := os.MkdirAll("db", 0644); err != nil && !os.IsExist(err) {
+		log.Fatalln("Failed to create db directory...")
+	}
+	for i, author := range feed.Author {
+		for j, article := range author.Article {
+			fileName := fmt.Sprintf("db/%d_%d_%s.txt", i, j, article.Title)
+			if err := os.WriteFile(fileName, []byte(article.Content), 0644); err != nil {
+				log.Println("Failed to write to db directory")
+			}
+			feedCopy.Author[i].Article[j].Content = fileName
+		}
+	}
+	data, err = json.Marshal(feedCopy)
+	if err != nil {
+		log.Fatal("Failed to marshal index: ", err)
+	}
+	if err := os.WriteFile("index.json", data, 0644); err != nil {
 		log.Panic("Failed to write db")
 	}
 }
@@ -137,22 +162,18 @@ func FetchFeed() {
 	SaveDB()
 	log.Println("Fetch RSS done.")
 }
-func GetContent(content string) string {
-	reg := regexp.MustCompile("<p>(.*?)</p>")
-	arr := reg.FindStringSubmatch(content)
-	if len(arr) == 0 {
-		log.Println("Parse content error: ", arr)
-		return ""
-	}
-	return arr[len(arr)-1]
-}
 func initRouter(r *gin.Engine) {
 	// APIs
 	apiRouter := r.Group("/api/v1")
-	apiRouter.GET("/feed", GetFeed)             // Get feed url list
-	apiRouter.PUT("/comment", GetFeed)          // Send comment by article ID
-	apiRouter.GET("/comment/:comment", GetFeed) // Get comment by article ID
-	apiRouter.PUT("/feed", AddFeed)
+	{
+		apiRouter.GET("/feed", GetFeed)             // Get feed url list
+		apiRouter.PUT("/comment", GetFeed)          // Send comment by article ID
+		apiRouter.GET("/comment/:comment", GetFeed) // Get comment by article ID
+		apiRouter.PUT("/feed", AddFeed)
+	}
+	r.Static("/db/", "/db/")
+	r.StaticFile("/db.json", "./db.json")
+	r.StaticFile("/index.json", "./index.json")
 
 	subFS, err := fs.Sub(f, "frontend/dist")
 	if err != nil {
