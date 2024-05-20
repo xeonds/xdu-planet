@@ -91,14 +91,14 @@ func main() {
 }
 
 func LoadConfig[Config any]() *Config {
-	if _, err := os.Stat("config.yaml"); err != nil {
+	if _, err := os.Stat("config.yml"); err != nil {
 		data, _ := yaml.Marshal(new(Config))
-		os.WriteFile("config.yaml", []byte(data), 0644)
+		os.WriteFile("config.yml", []byte(data), 0644)
 		log.Fatal(errors.New("config file not found, a template file has been created"))
 	}
 	viper.SetConfigName("config")
 	viper.AddConfigPath(".")
-	viper.SetConfigType("yaml")
+	viper.SetConfigType("yml")
 	if err := viper.ReadInConfig(); err != nil {
 		log.Fatal("config file read failed")
 	}
