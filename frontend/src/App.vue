@@ -14,7 +14,7 @@
     <el-footer style="border-top: 1px solid #ccc; padding: 1rem">
       <el-row>
         <el-col :span="24">
-          <el-link href="https://github.com/xeonds/xdu-planet">2023 © XDU-Planet</el-link>
+          <el-link href="https://github.com/xeonds/xdu-planet">2024 © XDU-Planet</el-link>
           <el-text type="primary" style="margin: 1rem">|</el-text>
           <el-text>Powered by Vue.js</el-text>
         </el-col>
