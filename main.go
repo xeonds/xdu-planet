@@ -9,6 +9,7 @@ import (
 	"io/fs"
 	"log"
 	"net/http"
+	"net/url"
 	"os"
 	"sync"
 	"time"
@@ -60,12 +61,16 @@ func main() {
 	config := LoadConfig[Config]()
 	feed := new(Feed)
 
+	log.Println("Fetching feeds...")
 	if updateDB {
-		log.Println("Fetching feeds...")
 		FetchFeed(feed, config)
 		ExportDB(feed)
 		return
 	}
+	go func() {
+		FetchFeed(feed, config)
+		ExportDB(feed)
+	}()
 
 	log.Println("Starting server...")
 	r := gin.Default()
@@ -151,19 +156,18 @@ func ExportDB(feed *Feed) {
 	if err := os.MkdirAll("db", 0777); err != nil && !os.IsExist(err) {
 		log.Fatal("Failed to create db directory:", err)
 	}
-	feedCopy := *feed
 	for i, author := range feed.Author {
 		for j, article := range author.Article {
-			fileName := fmt.Sprintf("db/%d_%d_%s.txt", i, j, article.Title)
+			fileName := fmt.Sprintf("db/%d_%d_%s.txt", i, j, url.QueryEscape(article.Title))
+			feed.Author[i].Article[j].Content = fileName
 			if err := os.WriteFile(fileName, []byte(article.Content), 0644); err != nil {
 				log.Println("Failed to write:", fileName)
 			} else {
-				feedCopy.Author[i].Article[j].Content = fileName
 				log.Println("Wrote:", fileName)
 			}
 		}
 	}
-	data, err = json.Marshal(feedCopy)
+	data, err = json.Marshal(feed)
 	if err != nil {
 		log.Fatal("Failed to marshal index:", err)
 	}
