@@ -20,6 +20,9 @@ import (
 	"github.com/robfig/cron/v3"
 	"github.com/spf13/viper"
 	"gopkg.in/yaml.v2"
+	"gorm.io/driver/mysql"
+	"gorm.io/driver/sqlite"
+	"gorm.io/gorm"
 )
 
 //go:embed frontend/dist/*
@@ -47,11 +50,28 @@ type Article struct {
 	Content string    `json:"content"`
 	Url     string    `json:"url"`
 }
+type Comment struct {
+	gorm.Model
+	ArticleId string `json:"article_id"`
+	Content   string `json:"content"`
+	UserId    string `json:"user_id"`
+	ReplyTo   string `json:"reply_to"`
+}
 
 // config file
 type Config struct {
-	Version int      `yaml:"version"`
-	Feeds   []string `yaml:"feeds"`
+	Version int `yaml:"version"`
+	DatabaseConfig
+	Feeds []string `yaml:"feeds"`
+}
+type DatabaseConfig struct {
+	Type     string `json:"type"` // 数据库类型
+	Host     string `json:"host"`
+	Port     string `json:"port"`
+	User     string `json:"user"`
+	Password string `json:"password"`
+	DB       string `json:"db"` // 数据库名
+	Migrate  bool   `json:"migrate"`
 }
 
 func main() {
@@ -59,6 +79,9 @@ func main() {
 	flag.Parse()
 
 	config := LoadConfig[Config]()
+	db := NewDB(&config.DatabaseConfig, func(db *gorm.DB) error {
+		return db.AutoMigrate(&Comment{})
+	})
 	feed := new(Feed)
 
 	log.Println("Fetching feeds...")
@@ -75,7 +98,31 @@ func main() {
 	log.Println("Starting server...")
 	r := gin.Default()
 	r.Use(cors.Default())
-	r.GET("/api/v1/feed", GetFeed(feed))
+	api := r.Group("/api/v1")
+	api.GET("/feed", func(c *gin.Context) {
+		c.JSON(200, feed)
+	})
+	api.POST("/comment/:article_id", func(c *gin.Context) {
+		data, article_id := new(Comment), c.Param("article_id")
+		if err := c.ShouldBindJSON(data); err != nil {
+			c.JSON(400, gin.H{"error": err.Error()})
+			return
+		}
+		if data.ArticleId = article_id; db.Create(data).Error != nil {
+			c.JSON(500, gin.H{"error": "failed to create comment"})
+			return
+		}
+		c.JSON(200, gin.H{"message": "Comment added"})
+	})
+	api.GET("/comment/:article_id", func(c *gin.Context) {
+		article_id := c.Param("article_id")
+		comments := new([]Comment)
+		if db.Where("article_id = ?", article_id).Find(comments).Error != nil {
+			c.JSON(500, gin.H{"error": "failed to get comments"})
+			return
+		}
+		c.JSON(200, comments)
+	})
 	r.Static("/db/", "/db/")
 	r.StaticFile("/db.json", "./db.json")
 	r.StaticFile("/index.json", "./index.json")
@@ -112,6 +159,30 @@ func LoadConfig[Config any]() *Config {
 		log.Fatal("config file parse failed")
 	}
 	return config
+}
+
+func NewDB(config *DatabaseConfig, migrator func(*gorm.DB) error) *gorm.DB {
+	var db *gorm.DB
+	var err error
+	switch config.Type {
+	case "mysql":
+		dsn := config.User + ":" + config.Password + "@tcp(" + config.Host + ":" + config.Port + ")/" + config.DB + "?charset=utf8mb4&parseTime=True&loc=Local"
+		db, err = gorm.Open(mysql.Open(dsn), &gorm.Config{})
+	case "sqlite":
+		db, err = gorm.Open(sqlite.Open(config.DB), &gorm.Config{})
+	}
+	if err != nil {
+		log.Fatalf("Failed to connect to database: %v", err)
+	}
+	if config.Migrate {
+		if migrator == nil {
+			log.Fatalf("Migrator is nil")
+		}
+		if err = migrator(db); err != nil {
+			log.Fatalf("Failed to migrate tables: %v", err)
+		}
+	}
+	return db
 }
 
 func FetchFeed(feed *Feed, config *Config) {
@@ -175,10 +246,4 @@ func ExportDB(feed *Feed) {
 		log.Panic("Failed to write index:", err)
 	}
 	log.Println("Export db done.")
-}
-
-func GetFeed(feed *Feed) gin.HandlerFunc {
-	return func(c *gin.Context) {
-		c.JSON(http.StatusOK, feed)
-	}
 }
