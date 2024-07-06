@@ -229,7 +229,7 @@ func ExportDB(feed *Feed) {
 	}
 	for i, author := range feed.Author {
 		for j, article := range author.Article {
-			fileName := fmt.Sprintf("db/%d_%d_%s.txt", i, j, url.QueryEscape(article.Title))
+			fileName := fmt.Sprintf("db/%d_%d_%s.txt", i, j, url.PathEscape(article.Title))
 			feed.Author[i].Article[j].Content = fileName
 			if err := os.WriteFile(fileName, []byte(article.Content), 0644); err != nil {
 				log.Println("Failed to write:", fileName)
