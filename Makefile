@@ -2,7 +2,7 @@ all: build/xdu-planet
 
 .PHONY: frontend
 
-build/xdu-planet: main.go frontend
+build/xdu-planet: main.go
 	go mod tidy && go build -o build/xdu-planet
 
 frontend:
