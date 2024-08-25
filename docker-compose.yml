@@ -1,0 +1,15 @@
+version: '3'
+
+services:
+  xdu-planet:
+    image: ubuntu:latest
+    working_dir: /app
+    volumes:
+      - ./build:/app
+      - /usr/share/zoneinfo/Asia/Shanghai:/etc/localtime:ro
+      - /etc/ssl/certs/ca-certificates.crt:/etc/ssl/certs/ca-certificates.crt
+    ports:
+      - "8192:8192"
+    command: /app/xdu-planet
+    restart: always
+
