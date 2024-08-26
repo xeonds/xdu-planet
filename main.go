@@ -55,6 +55,7 @@ func main() {
 		go avalon.Filter(db, config.AvalonGuard.Filter)
 	}
 	go func() {
+		feed := new(model.Feed)
 		FetchFeed(feed, config)
 		ExportDB(feed)
 	}()
