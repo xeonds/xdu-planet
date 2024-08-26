@@ -38,7 +38,7 @@ jobs:
       run: cp deploy/config.yml ./ && ls
 
     - name: Build frontend
-      run: cd frontend && npm install pnpm -g && pnpm install && pnpm run build && cd ..
+      run: cd frontend && npm install && npm run build && cd ..
     - name: Copy dist
       run:  cp -r frontend/dist/* public/
     - name: Build main program
