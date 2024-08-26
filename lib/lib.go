@@ -1,6 +1,8 @@
 package lib
 
 import (
+	"crypto/sha256"
+	"encoding/hex"
 	"errors"
 	"log"
 	"net/http"
@@ -86,4 +88,12 @@ func LoggerMiddleware(logFile string) gin.HandlerFunc {
 		c.Next()
 		logger.Printf("%s %s %s %s %s\n", c.ClientIP(), c.Request.Method, c.Request.URL.Path, time.Since(start), c.GetHeader("Authorization"))
 	}
+}
+
+func GenerateShortLink(url string) string {
+	h := sha256.New()
+	h.Write([]byte(url))
+	hash := h.Sum(nil)
+	shortLink := hex.EncodeToString(hash)[:24] // 取前8个字符作为短链接
+	return shortLink
 }

@@ -13,8 +13,8 @@
         <div class="avatar" v-for="item in authors">
           <el-row>
             <el-avatar @click="author = item.name">{{
-              item.name.substring(0, 1)
-            }}</el-avatar>
+          item.name.substring(0, 1)
+        }}</el-avatar>
           </el-row>
           <el-row>
             <el-text style="white-space: nowrap">{{ item.name }}</el-text>
@@ -25,8 +25,8 @@
   </div>
   <el-divider>Articles</el-divider>
   <el-timeline class="timeline">
-    <el-timeline-item v-for="(item, index) in groupedArticles" :timestamp="item.date" :type="item.list[0].type"
-      :hollow="item.list[0].hollow" placement="top">
+    <el-timeline-item v-for="(item, index) in groupedArticles(filteredArticles(authors, author), currPage, pageSize)"
+      :timestamp="item.date" :type="item.list[0].type" :hollow="item.list[0].hollow" placement="top">
       <el-card style="box-shadow: none; margin-bottom: 1rem" v-for="(article, subIndex) in item.list">
         <template #header>
           <el-row style="
@@ -40,162 +40,123 @@
               <el-text>{{ article.name }}</el-text>
             </span>
             <div style="display: flex; flex-flow: row wrap; justify-content: right">
-              <el-button text @click="
-                curr =
-                curr == `${index},${subIndex}` ? '' : `${index},${subIndex}`
-                ">{{
-    curr == `${index},${subIndex}` ? "Hide" : "Read"
-  }}</el-button>
+              <el-button text @click="getBody(article.title, article.content, `${index},${subIndex}`)">Read</el-button>
               <el-button text @click="viewUrl(article.url)">Source Link</el-button>
             </div>
           </el-row>
         </template>
-        <div style="
-            border-top: 1px solid var(--el-card-border-color);
-          " :class="{ 'article-fold': `${index},${subIndex}` != curr }">
-          <mavon-editor v-model="article.content" :subfield="false" :defaultOpen="'preview'" :toolbarsFlag="false"
-            :boxShadow="false" :transition="false" />
-        </div>
       </el-card>
     </el-timeline-item>
   </el-timeline>
-  <el-pagination layout="prev, pager, next" :total="filteredArticles.length" :page-size="pageSize"
+  <el-pagination layout="prev, pager, next" :total="filteredArticles(authors, author).length" :page-size="pageSize"
     v-model:current-page="currPage" />
+  <el-drawer v-model="viewArticleVisible" title="I am the title" :direction="'btt'" :size="'100%'">
+    <template #header>
+      <h3>{{ title }}</h3>
+    </template>
+    <editor.mavonEditor v-model="content" :subfield="false" :defaultOpen="'preview'" :toolbarsFlag="false" :boxShadow="false"
+      :transition="false" />
+  </el-drawer>
 </template>
-<script>
-import { mavonEditor } from "mavon-editor";
-import http from "../utils/http";
-import day from "../utils/day";
-import axios from "axios";
 
-export default {
-  components: { mavonEditor },
-  data() {
-    return {
-      author: "",
-      curr: "",
-      authors: [
-        {
-          name: "张三",
-          article: [{ title: "test title", content: "test content" }],
-        },
-        {
-          name: "李四",
-          article: [{ title: "test title", content: "test content" }],
-        },
-      ],
-      pageSize: 16,
-      currPage: 1,
-    };
-  },
-  created() {
-    this.fetchFeed();
-  },
-  computed: {
-    allArticles() {
-      return this.authors
-        .reduce((prev, cur) => {
-          return prev.concat(
-            cur.article.map((item) => {
-              return {
-                ...item,
-                name: cur.name,
-              };
-            })
-          );
-        }, [])
-        .map((item) => {
-          return {
-            ...item,
-            time: day(item.time).format("YYYY-MM-DD HH:mm:ss"),
-            content: this.getBody(item.content),
-          };
-        })
-        .sort((a, b) => {
-          return new Date(b.time) - new Date(a.time);
-        });
-    },
-    filteredArticles() {
-      return this.allArticles
-        .filter((item) => {
-          return this.author ? item.name === this.author : true;
-        })
-        .reduce((prev, cur) => {
-          if (
-            day(cur.time).format("M") !=
-            day(prev[prev.length - 1]?.time).format("M")
-          ) {
-            return prev.concat({
-              ...cur,
-              type: "primary",
-            });
-          }
-          return prev.concat(cur);
-        }, [])
-        .reduce((prev, cur) => {
-          if (
-            day(cur.time).format("YYYY") !=
-            day(prev[prev.length - 1]?.time).format("YYYY")
-          ) {
-            return prev.concat({
-              ...cur,
-              hollow: true,
-            });
-          }
-          return prev.concat(cur);
-        }, []);
-    },
-    groupedArticles() {
-      return this.filteredArticles
-        .slice(
-          (this.currPage - 1) * this.pageSize,
-          this.currPage * this.pageSize
-        )
-        .reduce((prev, cur) => {
-          const date = cur.time.split(" ")[0];
-          const index = prev.findIndex((item) => item.date === date);
-          if (index === -1) {
-            prev.push({
-              date,
-              list: [cur],
-            });
-          } else {
-            prev[index].list.push(cur);
-          }
-          return prev;
-        }, []);
-    },
-  },
-  watch: {
-    author() {
-      this.currPage = 1;
-    },
-  },
-  methods: {
-    fetchFeed() {
-      axios
-        .get("db.json")
-        .then((res) => {
-          this.authors = res.data.author;
-        })
-        .catch(() => {
-          http.get("/feed").then((res) => {
-            this.authors = res.data.author;
-          });
-        });
-    },
-    viewUrl(url) {
-      window.open(url);
-    },
-    getBody(content) {
-      var REG_BODY = /<body[^>]*>([\s\S]*)<\/body>/;
-      var result = REG_BODY.exec(content);
-      if (result && result.length === 2)
-        return result[1];
-      return content;
-    }
-  },
+<script lang="ts" setup>
+import editor from "mavon-editor";
+import { onMounted, ref } from "vue";
+import { Author, Article, Feed } from "../api/home";
+import dayjs from "dayjs";
+import { http, useHttp } from "../utils/http";
+
+type ArticleEx = Article & {
+  name?: string;
+  type?: string;
+  hollow?: boolean;
 };
+
+type GroupedArticle = {
+  date: string;
+  list: ArticleEx[];
+};
+
+const author = ref("");
+const curr = ref("");
+const authors = ref(new Array<Author>());
+const pageSize = ref(16);
+const currPage = ref(1);
+
+const allArticles = (authors: Author[]) =>
+  authors
+    .reduce(
+      (prev: ArticleEx[], cur) =>
+        prev.concat(cur.article.map((item) => ({ ...item, name: cur.name, })))
+      , []
+    )
+    .map((item) => ({
+      ...item,
+      time: dayjs(item.time).format("YYYY-MM-DD HH:mm:ss"),
+      content: item.content,
+    }))
+    .sort((a, b) => (dayjs(b.time).diff(a.time)));
+
+const filteredArticles = (authors: Author[], author?: string) =>
+  allArticles(authors)
+    .filter((item) => author ? item.name === author : true)
+    .reduce((prev: ArticleEx[], cur) =>
+      (dayjs(cur.time).format("M") != dayjs(prev[prev.length - 1]?.time).format("M"))
+        ? prev.concat({ ...cur, type: "primary", })
+        : prev.concat(cur)
+      , [])
+    .reduce((prev: ArticleEx[], cur) =>
+      (dayjs(cur.time).format("YYYY") != dayjs(prev[prev.length - 1]?.time).format("YYYY"))
+        ? prev.concat({ ...cur, hollow: true, })
+        : prev.concat(cur)
+      , []);
+
+const groupedArticles = (items: ArticleEx[], currPage: number, pageSize: number) =>
+  items
+    .slice((currPage - 1) * pageSize, currPage * pageSize)
+    .reduce((prev: GroupedArticle[], cur) => {
+      const date = cur.time.split(" ")[0];
+      const index = prev.findIndex((item) => item.date === date);
+      if (index === -1) {
+        prev.push({ date, list: [cur] });
+      } else {
+        prev[index].list.push(cur);
+      }
+      return prev;
+    }, []);
+
+
+const viewUrl = (url: string) => window.open(url);
+
+const title = ref("");
+const content = ref("");
+const viewArticleVisible = ref(false);
+const getBody = async (t: string, url: string, index: string) => {
+  const { data, err } = await useHttp("")().get<any>(encodeURI(url), false);
+  if (err.value != null || data.value == null) {
+    console.error(err.value);
+    return `加载 ${url} 失败：${err.value}`;
+  }
+  curr.value = curr.value == index ? '' : index;
+  var REG_BODY = /<body[^>]*>([\s\S]*)<\/body>/;
+  var result = REG_BODY.exec(data.value);
+  title.value = t;
+  content.value = (result && result.length === 2) ? result[1] : url;
+  viewArticleVisible.value = true;
+};
+
+onMounted(async () => {
+  const { data, err } = await (async () => {
+    const response = await http.get<Feed>("/feed");
+    if (response.err.value != null) return await useHttp("")().get<Feed>("/index.json");
+    else return response;
+  })()
+  if (err.value != null || data.value == null) {
+    console.error(err.value);
+    return;
+  }
+  authors.value = data.value.author.map((item, index) => ({ ...item, name: item.name == "" ? `unDefined Author ${index}` : item.name }));
+});
 </script>
 
 <style scoped>

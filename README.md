@@ -38,6 +38,21 @@ go build
 
 最终得到`xdu-planet.exe`。
 
+## API 文档
+
+- `GET /api/v1/feed` 获取所有文章
+- `GET /api/v1/comment/:article_id` 获取某篇文章的评论
+- `POST /api/v1/comment/:article_id` 发表评论
+  - `content` 评论内容
+  - `user_id` 用户ID
+  - `reply_to` 回复的评论ID（可选，仅当回复评论时传值）
+- `DELETE /api/v1/comment/:comment_id` 举报评论
+  - 举报后，评论自动转为`audit`状态，管理员可在后台审核
+- `GET /api/v1/admin/comment/:filter` 获取评论列表
+  - `filter` 可选，可选值为`ok`、`block`、`delete`、`audit`，分别表示已通过、已屏蔽、已删除、待审核
+- `POST /api/v1/admin/comment/audit/:comment_id` 审核评论
+  - `status` 审核状态，可选值为`ok`、`block`，分别表示通过、屏蔽
+
 ## 用法
 
 初次运行会产生一个空的配置文件`config.yml`，需要手动填写。配置文件格式如下：

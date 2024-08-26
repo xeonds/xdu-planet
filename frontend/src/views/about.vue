@@ -31,6 +31,12 @@
       加了个正文样式渲染器，可算不丑了。
     </el-text>
   </p>
+  <p>
+    <el-text>
+      2024.08.01
+      用Vue3重构了下前端，后端的评论系统在测试了。
+    </el-text>
+  </p>
   <el-divider>Special Thanks</el-divider>
   <p>
     <el-text
