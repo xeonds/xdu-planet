@@ -8,7 +8,6 @@ import (
 	"io/fs"
 	"log"
 	"net/http"
-	"net/url"
 	"os"
 	"sync"
 	"time"
@@ -42,7 +41,7 @@ func main() {
 
 	log.Println("Fetching feeds...")
 	if updateDB {
-		FetchFeed(feed, config)
+		feed = FetchFeed(config)
 		ExportDB(feed)
 		return
 	}
@@ -55,7 +54,7 @@ func main() {
 		go avalon.Filter(db, config.AvalonGuard.Filter)
 	}
 	go func() {
-		FetchFeed(feed, config)
+		feed = FetchFeed(config)
 		ExportDB(feed)
 	}()
 
@@ -156,7 +155,7 @@ func main() {
 		}
 		ctx.JSON(200, gin.H{"message": "Comment updated"})
 	})
-	r.Static("/db/", "/db/")
+	r.Static("/db/", "./db/")
 	r.StaticFile("/db.json", "./db.json")
 	r.StaticFile("/index.json", "./index.json")
 
@@ -165,7 +164,7 @@ func main() {
 
 	crontab := cron.New(cron.WithSeconds())
 	if _, err := crontab.AddFunc("0 15 * * * *", func() {
-		FetchFeed(feed, config)
+		feed = FetchFeed(config)
 		ExportDB(feed)
 	}); err != nil {
 		log.Fatal("Failed to start feed update daemon")
@@ -175,8 +174,8 @@ func main() {
 	log.Fatal(r.Run(":8192"))
 }
 
-func FetchFeed(feed *model.Feed, config *model.Config) {
-	wg, mutex := new(sync.WaitGroup), new(sync.Mutex)
+func FetchFeed(config *model.Config) *model.Feed {
+	wg, mutex, feed := new(sync.WaitGroup), new(sync.Mutex), new(model.Feed)
 
 	for _, url := range config.Feeds {
 		wg.Add(1)
@@ -203,6 +202,7 @@ func FetchFeed(feed *model.Feed, config *model.Config) {
 	wg.Wait()
 	feed.Update = time.Now()
 	log.Println("Fetch RSS done.")
+	return feed
 }
 
 func ExportDB(feed *model.Feed) {
@@ -219,8 +219,7 @@ func ExportDB(feed *model.Feed) {
 	}
 	for i, author := range feed.Author {
 		for j, article := range author.Article {
-			// fix: change article key to author_uri + article_title
-			fileName := fmt.Sprintf("db/%s_%s.txt", url.PathEscape(author.Uri), url.PathEscape(article.Title))
+			fileName := fmt.Sprintf("db/%s.txt", lib.GenerateShortLink(article.Url))
 			feed.Author[i].Article[j].Content = fileName
 			if err := os.WriteFile(fileName, []byte(article.Content), 0644); err != nil {
 				log.Println("Failed to write:", fileName)

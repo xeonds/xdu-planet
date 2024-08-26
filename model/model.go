@@ -8,9 +8,8 @@ import (
 
 // database struct
 type Feed struct {
-	Version int       `json:"version"`
-	Author  []Author  `json:"author"`
-	Update  time.Time `json:"update"`
+	Author []Author  `json:"author"`
+	Update time.Time `json:"update"`
 }
 type Author struct {
 	Name        string    `json:"name"`
