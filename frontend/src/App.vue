@@ -29,9 +29,11 @@
   font-weight: 600;
   color: var(--el-color-primary);
 }
+
 .el-header {
   padding: 0;
 }
+
 .el-main {
   width: 100vw;
   max-width: 1000px;
@@ -45,10 +47,12 @@
   --el-color-primary: #ee7171;
   --el-menu-hover-bg-color: #ffe6e6;
 }
+
 html.dark {
   /* 自定义深色背景颜色 */
   --el-bg-color: #626aef;
 }
+
 .flex-grow {
   flex-grow: 1;
 }
