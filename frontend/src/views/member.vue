@@ -40,7 +40,7 @@
 import { Article, Author, Feed } from "../api/home";
 import { onMounted, ref } from "vue";
 import dayjs from "dayjs";
-import { http } from "../utils/http";
+import { http, useHttp } from "../utils/http";
 
 const authors = ref(new (Array<Author>));
 
@@ -67,7 +67,7 @@ const viewUrl = (url: string) => window.open(url);
 onMounted(async () => {
   const { data, err } = await (async () => {
     const response = await http.get<Feed>("/feed");
-    if (response.err.value != null) return await http.get<Feed>("/index.json");
+    if (response.err.value != null) return await useHttp("")().get<Feed>("/index.json");
     return response;
   })()
   if (err.value != null || data.value == null) {

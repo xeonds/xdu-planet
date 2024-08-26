@@ -9,7 +9,10 @@ export const useFetch = async <T>(
   const data: Ref<T> = ref(new (Object as any)());
   const err: Ref<any> = ref(null);
   await fetch(url, init)
-    .then((res) => isJson ? res.json() : res.text())
+    .then((res) => {
+      if (res.status != 200) err.value = res.statusText;
+      else return isJson ? res.json() : res.text();
+    })
     .then((json) => (data.value = json))
     .catch((err) => (err.value = err));
   return { data, err };
@@ -19,15 +22,19 @@ export const useHttp =
   (baseUrl: string) =>
   (token = "") => {
     const get = <T>(url: string, isJson = true) =>
-      useFetch<T>(`${baseUrl}${url}`, {
-        method: "GET",
-        headers: isJson
-          ? {
-              "Content-Type": "application/json",
-              Authorization: `${token}`,
-            }
-          : {},
-      }, isJson);
+      useFetch<T>(
+        `${baseUrl}${url}`,
+        {
+          method: "GET",
+          headers: isJson
+            ? {
+                "Content-Type": "application/json",
+                Authorization: `${token}`,
+              }
+            : {},
+        },
+        isJson
+      );
     const post = <T>(url: string, data: any) =>
       useFetch<T>(`${baseUrl}${url}`, {
         method: "POST",
@@ -72,7 +79,6 @@ export const getDataArr = <T>(
   const data: Ref<T[]> = ref([]);
   const get = async (): Promise<T[]> => {
     const { data, err } = await http.get(api);
-    console.log(data.value);
     if (err.value != null) return err.value;
     return (data as Ref<T[]>).value;
   };

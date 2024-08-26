@@ -142,15 +142,14 @@ const getBody = async (t: string, url: string, index: string) => {
   var result = REG_BODY.exec(data.value);
   title.value = t;
   content.value = (result && result.length === 2) ? result[1] : url;
-  console.log(content.value);
   viewArticleVisible.value = true;
 };
 
 onMounted(async () => {
   const { data, err } = await (async () => {
     const response = await http.get<Feed>("/feed");
-    if (response.err.value != null) return await http.get<Feed>("/index.json");
-    return response;
+    if (response.err.value != null) return await useHttp("")().get<Feed>("/index.json");
+    else return response;
   })()
   if (err.value != null || data.value == null) {
     console.error(err.value);
