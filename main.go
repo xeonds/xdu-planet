@@ -92,7 +92,7 @@ func main() {
 	// 举报评论
 	api.DELETE("/comment/:id", func(c *gin.Context) {
 		id := c.Param("id")
-		if db.Update("status", "audit").Where("id = ?", id).Error != nil {
+		if db.Model(new(model.Comment)).Where("id = ?", id).Update("status", "audit").Error != nil {
 			c.JSON(500, gin.H{"error": "failed to delete comment"})
 			return
 		}
@@ -149,7 +149,7 @@ func main() {
 			ctx.JSON(400, gin.H{"error": err.Error()})
 			return
 		}
-		if db.Model(&model.Comment{}).Where("id = ?", id).Update("status", data.Status).Error != nil {
+		if db.Model(new(model.Comment)).Where("id = ?", id).Update("status", data.Status).Error != nil {
 			ctx.JSON(500, gin.H{"error": "failed to update comment"})
 			return
 		}
