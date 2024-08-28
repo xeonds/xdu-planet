@@ -83,7 +83,7 @@ func main() {
 	api.GET("/comment/:article_id", func(c *gin.Context) {
 		article_id := c.Param("article_id")
 		comments := new([]model.Comment)
-		if db.Where("article_id = ? AND status = ?", article_id, "ok").Find(comments).Error != nil {
+		if db.Where("article_id = ? AND status IN ?", article_id, []string{"ok", "audit"}).Find(comments).Error != nil {
 			c.JSON(500, gin.H{"error": "failed to get comments"})
 			return
 		}
