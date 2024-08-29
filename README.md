@@ -42,6 +42,7 @@ go build
 
 - `GET /api/v1/feed` 获取所有文章
 - `GET /api/v1/comment/:article_id` 获取某篇文章的评论
+- `GET /api/v1/comment/reply_to/:comment_id` 获取某个评论的回复
 - `POST /api/v1/comment/:article_id` 发表评论
   - `content` 评论内容
   - `user_id` 用户ID
