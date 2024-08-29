@@ -81,8 +81,7 @@ func main() {
 	})
 	// 获取评论列表
 	api.GET("/comment/:article_id", func(c *gin.Context) {
-		article_id := c.Param("article_id")
-		comments := new([]model.Comment)
+		article_id, comments := c.Param("article_id"), new([]model.Comment)
 		if db.Where("article_id = ? AND status IN ?", article_id, []string{"ok", "audit"}).Find(comments).Error != nil {
 			c.JSON(500, gin.H{"error": "failed to get comments"})
 			return
@@ -112,6 +111,15 @@ func main() {
 	// 	}
 	// 	c.JSON(200, gin.H{"message": "Comment updated"})
 	// })
+	// TODO:按照reply_to获取评论列表
+	api.GET("/comment/reply_to/:id", func(c *gin.Context) {
+		id, comments := c.Param("id"), new([]model.Comment)
+		if db.Where("reply_to = ? AND status IN ?", id, []string{"ok", "audit"}).Find(comments).Error != nil {
+			c.JSON(500, gin.H{"error": "failed to get comments"})
+			return
+		}
+		c.JSON(200, comments)
+	})
 	admin := api.Group("/admin")
 	admin.Use(lib.LoggerMiddleware(config.LogFile))
 	admin.Use(lib.JWTMiddleware(func(c *gin.Context, token string) error {
@@ -125,8 +133,7 @@ func main() {
 	}))
 	// 按状态获取评论列表
 	admin.GET("/comment/:filter", func(ctx *gin.Context) {
-		filter := ctx.Param("filter")
-		comments := new([]model.Comment)
+		filter, comments := ctx.Param("filter"), new([]model.Comment)
 		if filter == "all" {
 			if db.Find(comments).Error != nil {
 				ctx.JSON(500, gin.H{"error": "failed to get comments"})
