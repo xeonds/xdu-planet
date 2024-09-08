@@ -2,6 +2,7 @@ package avalon
 
 import (
 	"log"
+	"strings"
 	"time"
 
 	"gorm.io/gorm"
@@ -39,7 +40,8 @@ func Filter(db *gorm.DB, filter []string) {
 		}
 		for _, comment := range *comments {
 			for _, word := range filter {
-				if word == comment.Content {
+				// 如果评论中包含关键词
+				if strings.Contains(comment.Content, word) {
 					if db.Update("status", "block").Where("id = ?", comment.ID).Error != nil {
 						log.Println("Failed to delete comment")
 						continue

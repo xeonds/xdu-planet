@@ -6,37 +6,13 @@
 
 ## Build
 
-### Linux
-
-按照下面的脚本，先构建前端，再构建后端。最终的产物就是`xdu-planet`。
-
-运行之前先安装`nodejs, npm, pnpm, golang>=1.19`并配置好网络环境/镜像源。
-
+确保已经安装了golang sdk和nodejs后，克隆仓库。
 ```bash
-git clone https://github.com/xdlinux/planet.git && cd planet
-(cd frontend && pnpm i && pnpm run build)
-go mod tidy && go build
+cd xdu-planet
+make frontend && make build/xdu-planet
 ```
 
-### Windows
-
-首先安装`golang`和`pnpm`。前者下个安装包就行，后者需要先安装npm，随后：
-
-```bash
-npm install -g pnpm
-```
-
-然后开始构建：
-
-```bash
-cd frontend
-pnpm install
-pnpm run build
-cd ..
-go build
-```
-
-最终得到`xdu-planet.exe`。
+最终得到的二进制文件在`build/`目录下。
 
 ## API 文档
 
@@ -56,17 +32,47 @@ go build
 
 ## 用法
 
-初次运行会产生一个空的配置文件`config.yml`，需要手动填写。配置文件格式如下：
+### 作为服务部署
+
+初次运行会产生一个空的配置文件`config.yml`，需要手动填写。参考配置如下：
 
 ```yaml
 version: 1
-feeds:
-  - "https://xeonds.github.io/atom"
+databaseconfig:   # 数据库配置，现阶段用于支持评论系统
+  type: "sqlite"  # 可选值为sqlite、mysql
+  host: ""
+  port: ""
+  user: ""
+  password: ""
+  db: "planet.db"
+  migrate: true
+avalonguard:              # 评论审核系统配置
+  enablegravetimer: true  # 是否启用：被举报评论超时自动转为屏蔽状态
+  gravetimeout: 3600s     # 评论审核超时时间
+  enablefilter: false     # 是否启用：评论内容过滤
+  filter: []              # 过滤关键词列表
+logfile: "admin.log"      # 管理员操作日志文件
+admintoken: []            # 管理员token列表
+feeds: []                 # RSS源列表
 ```
 
 然后直接运行`xdu-planet`即可。打开浏览器访问`http://localhost:8192`即可看到聚合站。
 
 进程会每隔15分钟更新一次Feed源，更新后的数据会存储在`db/`目录下。
+
+### 作为命令行程序
+
+更改完配置文件后，通过如下命令即可更新Feed数据：
+
+```bash
+./xdu-planet -fetch
+```
+
+抓取完毕后，会生成作为索引的`index.json`和包含文章正文的`db.json`，以及作为`index.json`索引指向的正文数据库`db/`。
+
+### 作为静态站点部署
+
+如果不需要评论系统，可以直接将生成的`build/`目录下的文件（除了数据库文件，可执行程序和配置文件）部署到静态服务器上。在需要更新时，只需要重新运行`xdu-planet -fetch`并将生成的文件部署到服务器上即可。
 
 ## License
 

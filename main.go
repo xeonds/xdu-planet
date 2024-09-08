@@ -111,7 +111,7 @@ func main() {
 	// 	}
 	// 	c.JSON(200, gin.H{"message": "Comment updated"})
 	// })
-	// TODO:按照reply_to获取评论列表
+	// 按照reply_to获取评论列表
 	api.GET("/comment/reply_to/:id", func(c *gin.Context) {
 		id, comments := c.Param("id"), new([]model.Comment)
 		if db.Where("reply_to = ? AND status IN ?", id, []string{"ok", "audit"}).Find(comments).Error != nil {
@@ -199,7 +199,7 @@ func FetchFeed(config *model.Config) *model.Feed {
 			}
 			articles := make([]model.Article, len(res.Items))
 			for i, item := range res.Items {
-				articles[i] = model.Article{Title: item.Title, Time: *item.PublishedParsed, Content: "<blockquote>" + item.Description + "</blockquote>" + item.Content, Url: item.Link}
+				articles[i] = model.Article{Title: item.Title, Time: *item.PublishedParsed, Content: item.Description + "<hr />" + item.Content, Url: item.Link}
 			}
 			mutex.Lock()
 			feed.Author = append(feed.Author, model.Author{Name: res.Title, Email: res.Author.Email, Uri: res.Link, Description: res.Description, Article: articles})
