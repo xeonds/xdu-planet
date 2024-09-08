@@ -57,17 +57,17 @@ const allArticles = (authors: Author[]) =>
     }))
     .sort((a, b) => (dayjs(b.time).diff(a.time)));
 
-const timeCount = (items: Article[]) => {
-  if (items.length === 0) return 0;
-  return dayjs(items[0].time).diff(dayjs(items[items.length - 1].time), "day");
-}
+const timeCount = (items: Article[]) =>
+  (items.length === 0)
+    ? 0
+    : dayjs(items[0].time).diff(dayjs(items[items.length - 1].time), "day");
 
 const viewUrl = (url: string) => window.open(url);
 
 onMounted(async () => {
   const { data, err } = await (async () => {
     const response = await http.get<Feed>("/feed");
-    if (response.err.value != null) return await useHttp("")().get<Feed>("/index.json");
+    if (response.err.value != null) return await useHttp(".")().get<Feed>("/index.json");
     return response;
   })()
   if (err.value != null || data.value == null) {

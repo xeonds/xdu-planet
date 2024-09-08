@@ -153,7 +153,7 @@ const getBody = async (t: string, url: string, index: string) => {
 onMounted(async () => {
   const { data, err } = await (async () => {
     const response = await http.get<Feed>("/feed");
-    if (response.err.value != null) return await useHttp("")().get<Feed>("/index.json");
+    if (response.err.value != null) return await useHttp(".")().get<Feed>("/index.json");
     else return response;
   })()
   if (err.value != null || data.value == null) {
