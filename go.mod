@@ -2,13 +2,11 @@ module xyz.xeonds/xdu-planet
 
 go 1.19
 
-require (
-	github.com/gin-gonic/gin v1.8.1
-	github.com/m3ng9i/feedreader v0.0.0-20150817095054-5a47baf164a1
-)
+require github.com/gin-gonic/gin v1.8.1
 
 require (
 	github.com/gin-contrib/cors v1.4.0
+	github.com/mmcdole/gofeed v1.3.0
 	github.com/spf13/viper v1.18.2
 	gorm.io/driver/mysql v1.5.7
 	gorm.io/driver/sqlite v1.5.6
@@ -24,6 +22,7 @@ require (
 	github.com/magiconair/properties v1.8.7 // indirect
 	github.com/mattn/go-sqlite3 v1.14.22 // indirect
 	github.com/mitchellh/mapstructure v1.5.0 // indirect
+	github.com/mmcdole/goxpp v1.1.1-0.20240225020742-a0c311522b23 // indirect
 	github.com/sagikazarmark/locafero v0.4.0 // indirect
 	github.com/sagikazarmark/slog-shim v0.1.0 // indirect
 	github.com/sourcegraph/conc v0.3.0 // indirect
@@ -40,7 +39,6 @@ require (
 
 require (
 	github.com/PuerkitoBio/goquery v1.8.0 // indirect
-	github.com/abbot/go-http-auth v0.4.0 // indirect
 	github.com/andybalholm/cascadia v1.3.1 // indirect
 	github.com/gin-contrib/sse v0.1.0 // indirect
 	github.com/go-playground/locales v0.14.0 // indirect
@@ -49,7 +47,6 @@ require (
 	github.com/goccy/go-json v0.9.7 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
 	github.com/leodido/go-urn v1.2.1 // indirect
-	github.com/m3ng9i/go-utils v0.0.0-20160811013010-f9b7dc669fde // indirect
 	github.com/mattn/go-isatty v0.0.17 // indirect
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/modern-go/reflect2 v1.0.2 // indirect

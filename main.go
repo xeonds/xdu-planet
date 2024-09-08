@@ -14,7 +14,7 @@ import (
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
-	"github.com/m3ng9i/feedreader"
+	"github.com/mmcdole/gofeed"
 	"github.com/robfig/cron/v3"
 	"gorm.io/gorm"
 	"xyz.xeonds/xdu-planet/avalon"
@@ -183,22 +183,23 @@ func main() {
 
 func FetchFeed(config *model.Config) *model.Feed {
 	wg, mutex, feed := new(sync.WaitGroup), new(sync.Mutex), new(model.Feed)
+	feedParser := gofeed.NewParser()
 
 	for _, url := range config.Feeds {
 		wg.Add(1)
 		go func(url string) {
 			defer wg.Done()
-			res, err := feedreader.Fetch(url)
+			res, err := feedParser.ParseURL(url)
 			if err != nil {
-				log.Println("Fetch RSS failed:", err)
+				log.Println("Failed to fetch RSS:", url, err)
 				return
 			}
 			if res.Author == nil {
-				res.Author = &feedreader.FeedPerson{Name: "Unknown"}
+				res.Author = &gofeed.Person{Email: "Unknown", Name: "Unknown"}
 			}
 			articles := make([]model.Article, len(res.Items))
 			for i, item := range res.Items {
-				articles[i] = model.Article{Title: item.Title, Time: item.PubDate, Content: item.Content, Url: item.Link}
+				articles[i] = model.Article{Title: item.Title, Time: *item.PublishedParsed, Content: "<blockquote>" + item.Description + "</blockquote>" + item.Content, Url: item.Link}
 			}
 			mutex.Lock()
 			feed.Author = append(feed.Author, model.Author{Name: res.Title, Email: res.Author.Email, Uri: res.Link, Description: res.Description, Article: articles})

@@ -137,11 +137,16 @@ const getBody = async (t: string, url: string, index: string) => {
     console.error(err.value);
     return `加载 ${url} 失败：${err.value}`;
   }
+  // curr.value = curr.value == index ? '' : index;
+  // var REG_BODY = /<body[^>]*>([\s\S]*)<\/body>/;
+  // var result = REG_BODY.exec(data.value);
+  // title.value = t;
+  // content.value = (result && result.length === 2) ? result[1] : url;
+  // viewArticleVisible.value = true;
+
   curr.value = curr.value == index ? '' : index;
-  var REG_BODY = /<body[^>]*>([\s\S]*)<\/body>/;
-  var result = REG_BODY.exec(data.value);
   title.value = t;
-  content.value = (result && result.length === 2) ? result[1] : url;
+  content.value = data.value;
   viewArticleVisible.value = true;
 };
 
